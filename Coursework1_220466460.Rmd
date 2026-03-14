@@ -1,0 +1,147 @@
+---
+title: "MTH6139 Time Series Forecasting with Prophet"
+author: "Mohammad Usman Naveed"
+date: "March 10, 2026"
+
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: spacelab
+    highlight: tango
+---
+
+```{r, echo=FALSE}
+htmltools::img(src = knitr::image_uri("images/QMlogo.png"),
+               alt = 'logo',
+               style = 'position:absolute; top:0; right:0; padding:10px; width:20%;')
+```
+
+# 1 Introduction
+Time series analysis is concerned with data collected over time.
+In this project, we are concerned with analyzing atmospheric data on CO2 and forecasting future values of atmospheric CO2 using Meta’s Prophet forecasting system in R.
+
+Prophet is a data forecasting tool that is particularly useful for forecasting data that exhibits strong trends and seasonal patterns.
+
+## #2 Dataset Description
+
+The dataset used in this project is **co2 dataset** available in R.
+
+The dataset contains monthly data on atmospheric carbon dioxide collected at the Mauna Loa Observatory in Hawaii.
+
+The data starts from 1959 and exhibits trends over long periods of time.
+
+# 3 Load Libraries
+
+```{r}
+library(prophet)
+library(zoo)
+```
+
+# 4 Load and Visualize the Data
+
+```{r}
+data(co2)
+
+plot(co2,
+     main="Monthly Atmospheric CO2 Levels",
+     ylab="CO2 Concentration",
+     xlab="Year")
+```
+
+From the plot we observe:
+
+• CO2 levels increase steadily over time
+• There is a repeating yearly seasonal pattern
+
+# 5 Convert Data for Prophet
+
+Prophet requires a dataframe with two columns:
+
+• ds → date
+• y → observed value
+
+```{r}
+time_index <- time(co2)
+
+co2_dataframe <- data.frame(
+  ds = as.Date(as.yearmon(time_index)),
+  y = as.numeric(co2)
+)
+
+head(co2_dataframe)
+```
+
+# 6 Fit Prophet Model
+
+```{r}
+prophet_model <- prophet(co2_dataframe)
+```
+
+The Prophet model decomposes the time series into trend, seasonality and noise.
+
+# 7 Forecast Future Values
+
+```{r}
+future_dates <- make_future_dataframe(prophet_model,
+                                      periods = 24,
+                                      freq="month")
+
+forecast <- predict(prophet_model, future_dates)
+
+head(forecast)
+```
+
+The forecast dataframe includes:
+
+• yhat → predicted values
+• yhat_lower → lower bound
+• yhat_upper → upper bound
+
+# 8 Plot Forecast
+
+```{r}
+plot(prophet_model, forecast)
+```
+
+The black dots represent historical data and the blue line represents the predicted trend.
+
+# 9 Prophet Components
+
+```{r}
+prophet_plot_components(prophet_model, forecast)
+```
+
+This plot shows the decomposition of the time series into:
+
+• long-term trend
+• yearly seasonal pattern
+
+# 10 Additional Visualization
+
+```{r}
+hist(co2_dataframe$y,
+     main="Distribution of CO2 Values",
+     xlab="CO2 Level")
+```
+
+# 11 Linear Trend Model
+
+```{r}
+time_numeric <- 1:length(co2_dataframe$y)
+
+linear_model <- lm(co2_dataframe$y ~ time_numeric)
+
+summary(linear_model)
+```
+
+
+The regression analysis confirms the trends in atmospheric CO2.
+
+# 12 Conclusion
+
+In this project, we analyzed atmospheric data on CO2 using Meta’s Prophet forecasting model.
+
+The results show that atmospheric CO2 exhibits strong trends and seasonal patterns.
+
+Prophet successfully captures these trends and seasonal patterns in atmospheric data on CO2 and generates forecasts for future values of atmospheric CO2.
